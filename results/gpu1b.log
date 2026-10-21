@@ -1,0 +1,62 @@
+train 3040  test 2026  device cuda
+/kaggle/working/sgn.py:328: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  scaler = torch.cuda.amp.GradScaler(enabled=use_amp)
+/kaggle/working/sgn.py:345: UserWarning: Detected call of `lr_scheduler.step()` before `optimizer.step()`. In PyTorch 1.1.0 and later, you should call them in the opposite order: `optimizer.step()` before `lr_scheduler.step()`.  Failure to do this will result in PyTorch skipping the first value of the learning rate schedule. See more details at https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate
+  scaler.scale(loss).backward(); scaler.step(opt); scaler.update(); sched.step(); it += 1
+ep 0 it 50/2280 loss 1.6029  13s
+ep 0 it 100/2280 loss 1.4312  25s
+ep 0 it 150/2280 loss 1.2726  36s
+ep 1 it 200/2280 loss 1.0773  48s
+ep 1 it 250/2280 loss 1.0963  60s
+ep 1 it 300/2280 loss 1.0713  72s
+ep 1 it 350/2280 loss 0.9412  84s
+ep 2 it 400/2280 loss 1.0487  97s
+ep 2 it 450/2280 loss 0.8548  109s
+ep 2 it 500/2280 loss 0.7843  121s
+ep 2 it 550/2280 loss 0.7814  134s
+ep 3 it 600/2280 loss 0.7347  146s
+ep 3 it 650/2280 loss 0.7180  159s
+ep 3 it 700/2280 loss 0.6829  171s
+ep 3 it 750/2280 loss 0.7341  184s
+ep 4 it 800/2280 loss 0.6026  196s
+ep 4 it 850/2280 loss 0.8035  209s
+ep 4 it 900/2280 loss 0.5141  222s
+ep 4 it 950/2280 loss 0.5414  234s
+ep 5 it 1000/2280 loss 0.5790  247s
+ep 5 it 1050/2280 loss 0.6225  260s
+ep 5 it 1100/2280 loss 0.6979  273s
+ep 6 it 1150/2280 loss 0.5404  286s
+ep 6 it 1200/2280 loss 0.4369  299s
+ep 6 it 1250/2280 loss 0.4489  312s
+ep 6 it 1300/2280 loss 0.4249  324s
+ep 7 it 1350/2280 loss 0.4536  337s
+ep 7 it 1400/2280 loss 0.4177  350s
+ep 7 it 1450/2280 loss 0.3091  363s
+ep 7 it 1500/2280 loss 0.3598  376s
+ep 8 it 1550/2280 loss 0.4959  389s
+ep 8 it 1600/2280 loss 0.4483  402s
+ep 8 it 1650/2280 loss 0.4497  415s
+ep 8 it 1700/2280 loss 0.3762  428s
+ep 9 it 1750/2280 loss 0.3433  441s
+ep 9 it 1800/2280 loss 0.4320  454s
+ep 9 it 1850/2280 loss 0.3684  467s
+ep 9 it 1900/2280 loss 0.4748  480s
+ep 10 it 1950/2280 loss 0.4313  493s
+ep 10 it 2000/2280 loss 0.3857  506s
+ep 10 it 2050/2280 loss 0.4553  519s
+ep 11 it 2100/2280 loss 0.2604  532s
+ep 11 it 2150/2280 loss 0.3293  545s
+ep 11 it 2200/2280 loss 0.3330  558s
+ep 11 it 2250/2280 loss 0.3363  571s
+evaluating ...
+  delta=8 shadow=0  IoU=0.8609  F1=0.9192  MAE=0.0148  alpha_ir=[0.639, 0.692, 0.575]
+  delta=4 shadow=0  IoU=0.8587  F1=0.9176  MAE=0.0151  alpha_ir=[0.64, 0.694, 0.575]
+  delta=2 shadow=0  IoU=0.8463  F1=0.9091  MAE=0.0165  alpha_ir=[0.641, 0.696, 0.576]
+  delta=1 shadow=0  IoU=0.7741  F1=0.8554  MAE=0.0246  alpha_ir=[0.646, 0.698, 0.575]
+  delta=0 shadow=0  IoU=0.4178  F1=0.5390  MAE=0.0713  alpha_ir=[0.652, 0.688, 0.569]
+  delta=8 shadow=1  IoU=0.8601  F1=0.9183  MAE=0.0149  alpha_ir=[0.639, 0.693, 0.575]
+  delta=4 shadow=1  IoU=0.8578  F1=0.9167  MAE=0.0152  alpha_ir=[0.639, 0.695, 0.575]
+  delta=2 shadow=1  IoU=0.8449  F1=0.9078  MAE=0.0168  alpha_ir=[0.641, 0.697, 0.576]
+  delta=1 shadow=1  IoU=0.7741  F1=0.8555  MAE=0.0250  alpha_ir=[0.646, 0.699, 0.575]
+  delta=0 shadow=1  IoU=0.4003  F1=0.5210  MAE=0.0743  alpha_ir=[0.652, 0.689, 0.569]
+saved results_full_nolg_seed0.json

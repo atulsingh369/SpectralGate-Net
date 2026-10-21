@@ -1,0 +1,12 @@
+\begin{tabular}{lcc}
+\toprule
+Method & Params (M) & Latency (ms, bs=1) \\
+\midrule
+RGB only & 11.8 & 3.7 \\
+Early concatenation & 24.2 & 7.5 \\
+Fixed gates ($\alpha=0.5$) & 27.1 & 13.5 \\
+SpectralGate-Net & 27.1 & 15.7 \\
+SpectralGate-Net, no $L_{gate}$ & 27.1 & 17.1 \\
+SpectralGate-Net + raw desc., no $L_{gate}$ & 27.1 & 16.7 \\
+\bottomrule
+\end{tabular}
