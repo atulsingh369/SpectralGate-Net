@@ -2,7 +2,7 @@
 
 This repository contains the code, simulated thermal crossover protocol, and experiments for two related studies on RGB-Thermal camouflaged object segmentation.
 
-**1. Bio-AI Conclave 2026 (Phase 1)**  
+**1. Bio-AI Conclave 2026**  
 *Mitigating Modality Over-Reliance at Thermal Crossover: A Controlled RGB-T Study for Camouflaged Animal Segmentation*  
 Investigates the structural failure of early concatenation at thermal crossover and maps a Pareto-optimal trade-off frontier using Modality Dropout and Oracle gating.
 
@@ -22,7 +22,7 @@ The LWIR (thermal) channel is synthesized dynamically during training and evalua
 
 ---
 
-## Running Phase 1: Modality Dropout & Oracle Gates (Bio-AI Paper)
+## Running SpectralGate-Net v2.0: Modality Dropout & Oracle Gates (Bio-AI Paper)
 The `phase1.py` script executes the Modality Dropout sweeps ($p=0.10, 0.25, 0.50$), supervised gating, the Oracle gate ceiling, and the threshold routing rule.
 
 **Train Models:**
@@ -46,7 +46,7 @@ python phase1.py --report
 
 ---
 
-## Running SpectralGate-Net: Wavelet Architecture (NCEDT Paper)
+## Running SpectralGate-Net v1.0: Wavelet Architecture (NCEDT Paper)
 The `sgn.py` script executes the Haar-wavelet decomposition and D-DRG gate experiments.
 
 **Train Models:**
