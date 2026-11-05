@@ -1,0 +1,12 @@
+camouflaged images found: train=3040 test=2026 (expected 3040 / 2026)
+  caching 0/3040
+  caching 500/3040
+  caching 1000/3040
+  caching 1500/3040
+  caching 2000/3040
+  caching 2500/3040
+  caching 3000/3040
+  caching 0/2026
+  caching 500/2026
+  caching 1000/2026
+  caching 1500/2026

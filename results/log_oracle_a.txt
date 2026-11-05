@@ -1,0 +1,111 @@
+camouflaged images found: train=3040 test=2026 (expected 3040 / 2026)
+  caching 0/3040
+  caching 500/3040
+  caching 1000/3040
+  caching 1500/3040
+  caching 2000/3040
+  caching 2500/3040
+  caching 3000/3040
+  caching 0/2026
+  caching 500/2026
+  caching 1000/2026
+  caching 1500/2026
+  caching 2000/2026
+Downloading: "https://download.pytorch.org/models/resnet18-f37072fd.pth" to /root/.cache/torch/hub/checkpoints/resnet18-f37072fd.pth
+  0%|          | 0.00/44.7M [00:00<?, ?B/s] 36%|███▌      | 16.0M/44.7M [00:00<00:00, 168MB/s] 72%|███████▏  | 32.0M/44.7M [00:00<00:00, 162MB/s]100%|██████████| 44.7M/44.7M [00:00<00:00, 168MB/s]
+/kaggle/working/phase1.py:236: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  scaler = torch.cuda.amp.GradScaler(enabled=AMP)
+[gate_oracle s0] ep 1/12 it 1/190 loss 1.7132 16939 ms/it elapsed 0.3m ETA 643.4m
+[gate_oracle s0] ep 1/12 it 50/190 loss 1.6285 467 ms/it elapsed 0.4m ETA 17.4m
+[gate_oracle s0] ep 1/12 it 100/190 loss 1.5873 299 ms/it elapsed 0.5m ETA 10.9m
+[gate_oracle s0] ep 1/12 it 150/190 loss 1.5250 243 ms/it elapsed 0.6m ETA 8.6m
+[gate_oracle s0] ep 2/12 it 10/190 loss 1.2627 216 ms/it elapsed 0.7m ETA 7.5m
+[gate_oracle s0] ep 2/12 it 60/190 loss 1.2497 199 ms/it elapsed 0.8m ETA 6.7m
+[gate_oracle s0] ep 2/12 it 110/190 loss 1.2210 188 ms/it elapsed 0.9m ETA 6.2m
+[gate_oracle s0] ep 2/12 it 160/190 loss 1.1908 181 ms/it elapsed 1.1m ETA 5.8m
+[gate_oracle s0] ep 3/12 it 20/190 loss 1.0766 175 ms/it elapsed 1.2m ETA 5.5m
+[gate_oracle s0] ep 3/12 it 70/190 loss 1.0683 171 ms/it elapsed 1.3m ETA 5.2m
+[gate_oracle s0] ep 3/12 it 120/190 loss 1.0404 167 ms/it elapsed 1.4m ETA 5.0m
+[gate_oracle s0] ep 3/12 it 170/190 loss 1.0128 165 ms/it elapsed 1.5m ETA 4.7m
+[gate_oracle s0] ep 4/12 it 30/190 loss 0.8971 163 ms/it elapsed 1.6m ETA 4.6m
+[gate_oracle s0] ep 4/12 it 80/190 loss 0.8665 161 ms/it elapsed 1.7m ETA 4.4m
+[gate_oracle s0] ep 4/12 it 130/190 loss 0.8443 160 ms/it elapsed 1.9m ETA 4.2m
+[gate_oracle s0] ep 4/12 it 180/190 loss 0.8218 158 ms/it elapsed 2.0m ETA 4.0m
+[gate_oracle s0] ep 5/12 it 40/190 loss 0.7028 157 ms/it elapsed 2.1m ETA 3.9m
+[gate_oracle s0] ep 5/12 it 90/190 loss 0.6996 157 ms/it elapsed 2.2m ETA 3.7m
+[gate_oracle s0] ep 5/12 it 140/190 loss 0.6820 156 ms/it elapsed 2.3m ETA 3.6m
+[gate_oracle s0] ep 5/12 it 190/190 loss 0.6615 156 ms/it elapsed 2.5m ETA 3.4m
+[gate_oracle s0] ep 6/12 it 50/190 loss 0.5750 155 ms/it elapsed 2.6m ETA 3.3m
+[gate_oracle s0] ep 6/12 it 100/190 loss 0.5650 155 ms/it elapsed 2.7m ETA 3.2m
+[gate_oracle s0] ep 6/12 it 150/190 loss 0.5529 154 ms/it elapsed 2.8m ETA 3.0m
+[gate_oracle s0] ep 7/12 it 10/190 loss 0.4752 154 ms/it elapsed 2.9m ETA 2.9m
+[gate_oracle s0] ep 7/12 it 60/190 loss 0.5039 153 ms/it elapsed 3.1m ETA 2.8m
+[gate_oracle s0] ep 7/12 it 110/190 loss 0.4913 153 ms/it elapsed 3.2m ETA 2.6m
+[gate_oracle s0] ep 7/12 it 160/190 loss 0.4811 152 ms/it elapsed 3.3m ETA 2.5m
+[gate_oracle s0] ep 8/12 it 20/190 loss 0.4763 152 ms/it elapsed 3.4m ETA 2.4m
+[gate_oracle s0] ep 8/12 it 70/190 loss 0.4485 152 ms/it elapsed 3.5m ETA 2.2m
+[gate_oracle s0] ep 8/12 it 120/190 loss 0.4395 151 ms/it elapsed 3.7m ETA 2.1m
+[gate_oracle s0] ep 8/12 it 170/190 loss 0.4330 151 ms/it elapsed 3.8m ETA 2.0m
+[gate_oracle s0] ep 9/12 it 30/190 loss 0.4289 151 ms/it elapsed 3.9m ETA 1.8m
+[gate_oracle s0] ep 9/12 it 80/190 loss 0.4105 151 ms/it elapsed 4.0m ETA 1.7m
+[gate_oracle s0] ep 9/12 it 130/190 loss 0.4036 151 ms/it elapsed 4.1m ETA 1.6m
+[gate_oracle s0] ep 9/12 it 180/190 loss 0.3965 150 ms/it elapsed 4.3m ETA 1.5m
+[gate_oracle s0] ep 10/12 it 40/190 loss 0.4107 150 ms/it elapsed 4.4m ETA 1.3m
+[gate_oracle s0] ep 10/12 it 90/190 loss 0.3857 150 ms/it elapsed 4.5m ETA 1.2m
+[gate_oracle s0] ep 10/12 it 140/190 loss 0.3761 150 ms/it elapsed 4.6m ETA 1.1m
+[gate_oracle s0] ep 10/12 it 190/190 loss 0.3727 150 ms/it elapsed 4.7m ETA 0.9m
+[gate_oracle s0] ep 11/12 it 50/190 loss 0.3531 149 ms/it elapsed 4.9m ETA 0.8m
+[gate_oracle s0] ep 11/12 it 100/190 loss 0.3562 149 ms/it elapsed 5.0m ETA 0.7m
+[gate_oracle s0] ep 11/12 it 150/190 loss 0.3550 149 ms/it elapsed 5.1m ETA 0.6m
+[gate_oracle s0] ep 12/12 it 10/190 loss 0.3531 149 ms/it elapsed 5.2m ETA 0.4m
+[gate_oracle s0] ep 12/12 it 60/190 loss 0.3569 149 ms/it elapsed 5.3m ETA 0.3m
+[gate_oracle s0] ep 12/12 it 110/190 loss 0.3546 149 ms/it elapsed 5.5m ETA 0.2m
+[gate_oracle s0] ep 12/12 it 160/190 loss 0.3486 149 ms/it elapsed 5.6m ETA 0.1m
+[gate_oracle s0] DONE mIoU {'8': 87.9, '4': 87.7, '2': 87.0, '1': 81.4, '0': 43.6} alpha(P3) {'8': 1.0, '4': 1.0, '2': 1.0, '1': 0.88, '0': 0.12}
+[gate_oracle s1] ep 1/12 it 1/190 loss 1.7477 143 ms/it elapsed 0.0m ETA 5.4m
+[gate_oracle s1] ep 1/12 it 50/190 loss 1.6273 143 ms/it elapsed 0.1m ETA 5.3m
+[gate_oracle s1] ep 1/12 it 100/190 loss 1.5724 143 ms/it elapsed 0.2m ETA 5.2m
+[gate_oracle s1] ep 1/12 it 150/190 loss 1.5104 143 ms/it elapsed 0.4m ETA 5.1m
+[gate_oracle s1] ep 2/12 it 10/190 loss 1.3030 143 ms/it elapsed 0.5m ETA 5.0m
+[gate_oracle s1] ep 2/12 it 60/190 loss 1.2804 143 ms/it elapsed 0.6m ETA 4.9m
+[gate_oracle s1] ep 2/12 it 110/190 loss 1.2525 144 ms/it elapsed 0.7m ETA 4.7m
+[gate_oracle s1] ep 2/12 it 160/190 loss 1.2268 144 ms/it elapsed 0.8m ETA 4.6m
+[gate_oracle s1] ep 3/12 it 20/190 loss 1.1207 144 ms/it elapsed 1.0m ETA 4.5m
+[gate_oracle s1] ep 3/12 it 70/190 loss 1.0936 144 ms/it elapsed 1.1m ETA 4.4m
+[gate_oracle s1] ep 3/12 it 120/190 loss 1.0734 144 ms/it elapsed 1.2m ETA 4.3m
+[gate_oracle s1] ep 3/12 it 170/190 loss 1.0506 144 ms/it elapsed 1.3m ETA 4.2m
+[gate_oracle s1] ep 4/12 it 30/190 loss 0.9425 144 ms/it elapsed 1.4m ETA 4.0m
+[gate_oracle s1] ep 4/12 it 80/190 loss 0.9098 144 ms/it elapsed 1.6m ETA 3.9m
+[gate_oracle s1] ep 4/12 it 130/190 loss 0.8865 144 ms/it elapsed 1.7m ETA 3.8m
+[gate_oracle s1] ep 4/12 it 180/190 loss 0.8665 144 ms/it elapsed 1.8m ETA 3.7m
+[gate_oracle s1] ep 5/12 it 40/190 loss 0.7373 144 ms/it elapsed 1.9m ETA 3.6m
+[gate_oracle s1] ep 5/12 it 90/190 loss 0.7217 144 ms/it elapsed 2.0m ETA 3.4m
+[gate_oracle s1] ep 5/12 it 140/190 loss 0.7111 144 ms/it elapsed 2.2m ETA 3.3m
+[gate_oracle s1] ep 5/12 it 190/190 loss 0.7019 144 ms/it elapsed 2.3m ETA 3.2m
+[gate_oracle s1] ep 6/12 it 50/190 loss 0.6169 144 ms/it elapsed 2.4m ETA 3.1m
+[gate_oracle s1] ep 6/12 it 100/190 loss 0.6033 144 ms/it elapsed 2.5m ETA 3.0m
+[gate_oracle s1] ep 6/12 it 150/190 loss 0.5943 144 ms/it elapsed 2.6m ETA 2.8m
+[gate_oracle s1] ep 7/12 it 10/190 loss 0.5066 144 ms/it elapsed 2.8m ETA 2.7m
+[gate_oracle s1] ep 7/12 it 60/190 loss 0.5313 144 ms/it elapsed 2.9m ETA 2.6m
+[gate_oracle s1] ep 7/12 it 110/190 loss 0.5158 144 ms/it elapsed 3.0m ETA 2.5m
+[gate_oracle s1] ep 7/12 it 160/190 loss 0.5087 144 ms/it elapsed 3.1m ETA 2.4m
+[gate_oracle s1] ep 8/12 it 20/190 loss 0.5060 144 ms/it elapsed 3.3m ETA 2.2m
+[gate_oracle s1] ep 8/12 it 70/190 loss 0.4874 144 ms/it elapsed 3.4m ETA 2.1m
+[gate_oracle s1] ep 8/12 it 120/190 loss 0.4772 144 ms/it elapsed 3.5m ETA 2.0m
+[gate_oracle s1] ep 8/12 it 170/190 loss 0.4683 144 ms/it elapsed 3.6m ETA 1.9m
+[gate_oracle s1] ep 9/12 it 30/190 loss 0.4101 145 ms/it elapsed 3.7m ETA 1.8m
+[gate_oracle s1] ep 9/12 it 80/190 loss 0.4161 145 ms/it elapsed 3.9m ETA 1.6m
+[gate_oracle s1] ep 9/12 it 130/190 loss 0.4208 145 ms/it elapsed 4.0m ETA 1.5m
+[gate_oracle s1] ep 9/12 it 180/190 loss 0.4138 145 ms/it elapsed 4.1m ETA 1.4m
+[gate_oracle s1] ep 10/12 it 40/190 loss 0.3862 145 ms/it elapsed 4.2m ETA 1.3m
+[gate_oracle s1] ep 10/12 it 90/190 loss 0.3868 145 ms/it elapsed 4.3m ETA 1.2m
+[gate_oracle s1] ep 10/12 it 140/190 loss 0.3890 145 ms/it elapsed 4.5m ETA 1.0m
+[gate_oracle s1] ep 10/12 it 190/190 loss 0.3891 145 ms/it elapsed 4.6m ETA 0.9m
+[gate_oracle s1] ep 11/12 it 50/190 loss 0.3684 145 ms/it elapsed 4.7m ETA 0.8m
+[gate_oracle s1] ep 11/12 it 100/190 loss 0.3701 145 ms/it elapsed 4.8m ETA 0.7m
+[gate_oracle s1] ep 11/12 it 150/190 loss 0.3714 145 ms/it elapsed 4.9m ETA 0.6m
+[gate_oracle s1] ep 12/12 it 10/190 loss 0.3950 145 ms/it elapsed 5.1m ETA 0.4m
+[gate_oracle s1] ep 12/12 it 60/190 loss 0.3778 145 ms/it elapsed 5.2m ETA 0.3m
+[gate_oracle s1] ep 12/12 it 110/190 loss 0.3765 145 ms/it elapsed 5.3m ETA 0.2m
+[gate_oracle s1] ep 12/12 it 160/190 loss 0.3713 145 ms/it elapsed 5.4m ETA 0.1m
+[gate_oracle s1] DONE mIoU {'8': 87.8, '4': 87.7, '2': 86.9, '1': 81.1, '0': 43.1} alpha(P3) {'8': 1.0, '4': 1.0, '2': 1.0, '1': 0.88, '0': 0.12}

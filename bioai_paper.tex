@@ -1,0 +1,240 @@
+% ============================================================
+% BIO-AI-2026 conclave paper -- Springer LNCS format (limit: 15 pages)
+% ============================================================
+\documentclass[runningheads]{llncs}
+
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{booktabs}
+
+\newcommand{\rgb}{\mathrm{rgb}}
+\newcommand{\ir}{\mathrm{ir}}
+
+\begin{document}
+
+\title{Mitigating Modality Over-Reliance at Thermal Crossover: A Controlled RGB–T Study for Camouflaged Animal Segmentation}
+\titlerunning{Modality Over-Reliance at Thermal Crossover}
+
+\author{Atul Kumar Singh\inst{1}\thanks{Corresponding author.} \and Akash Tiwari\inst{1} \and Prashant Gupta\inst{1}}
+\authorrunning{A. K. Singh et al.}
+
+\institute{Department of Computer Science,\\ National Institute of Electronics and Information Technology (NIELIT), Gorakhpur, India\\
+\email{atulsingh.0369@gmail.com}
+}
+
+\maketitle
+
+\begin{abstract}
+Drone-mounted thermal infrared cameras (long-wave infrared, LWIR) are widely used to survey wildlife under forest cover, but their advantage fades when an animal and its surroundings reach the same temperature, as happens around dawn and dusk (thermal crossover). A model that fuses visible (RGB) and thermal images must then avoid relying on a thermal channel that no longer shows the animal. Because no paired RGB--thermal dataset of camouflaged animals was available to us, we study this failure in a controlled simulation: a thermal image is synthesised for every camouflaged-animal image of the Camouflaged Object Detection 10K (COD10K) dataset, and the target--background temperature difference $\delta$ is swept from 8\,K to 0\,K. A two-stream fusion network reaches 87.7\% mean Intersection over Union (mIoU) at $\delta=8$\,K but falls to 42.1\% at $\delta=0$, 4.4 points below an RGB-only model (46.5\%); a perfect switch between the two models would recover exactly this gap and nothing else. Over three seeds we compare modality dropout, learned reliability gates (unsupervised and supervised), an oracle gate that is given the true $\delta$, and a threshold rule. Dropout recovers the loss at crossover (up to 47.0\% at a dropout rate of 0.5) at a cost of 0.9 to 6.1 points at $\delta=1$\,K, depending on the rate. An unsupervised gate moves in the wrong direction, a supervised gate follows $\delta$ without improving accuracy, and even the oracle gate recovers only about a third of the gap. This is a simulation study; no real thermal data were used.
+\keywords{Thermal crossover \and RGB--thermal fusion \and Camouflaged object segmentation \and Modality dropout \and Wildlife monitoring \and Biodiversity monitoring \and Environmental informatics}
+\end{abstract}
+
+%=====================================================================
+\section{Introduction}
+Thermal infrared cameras carried by drones have become a practical tool for counting and locating wildlife that is hard to see from the ground, including animals living in forest canopies. Automating these dual-stream surveys is a critical objective for environmental informatics and biodiversity monitoring, allowing for scalable, non-invasive wildlife censuses. Their usefulness depends strongly on the thermal contrast between animal and surroundings, which changes over the day. In a rainforest survey, arboreal mammals stood out in thermal images at night and in the early morning, while the canopy was cool, but were hard to detect by mid-morning, once direct sunshine had heated the vegetation above 30\,$^{\circ}$C~\cite{kays}. A later study that flew a drone with both thermal and RGB cameras at five times between 11~pm and 7~am found that flights at 3~am produced about 67\% more detections than flights at 7~am, whereas about 112\% more detections could be identified to taxonomic group at 7~am, which the authors attribute in part to the help of the simultaneous RGB camera~\cite{whitworth}. Thermal and visible imagery are therefore complementary, and automated detectors for such surveys will have to combine them.
+
+The combination has a failure mode that is easy to overlook. When a network is trained mostly on images where the thermal channel shows the animal clearly, it can come to depend on that channel. At \emph{thermal crossover}, when animal and background reach almost the same temperature, the radiance difference
+\begin{equation}
+\Delta W=\int_{8\,\mu\mathrm{m}}^{14\,\mu\mathrm{m}}\bigl|W_\lambda(T_{\mathrm{animal}})-W_\lambda(T_{\mathrm{bg}})\bigr|\,d\lambda\;\longrightarrow\;0
+\label{eq:cross}
+\end{equation}
+vanishes, the animal disappears from the thermal image, and the thermal branch supplies only background clutter. A fusion model that still trusts that branch can do worse than one that ignores thermal altogether.
+
+We ask three questions. (1)~How large is this failure, and how much accuracy could any remedy recover? (2)~Which simple training-time remedies help, and what do they cost at other thermal contrasts? (3)~Does a learned reliability gate, which should in principle switch the thermal branch off when it is uninformative, help?
+
+Paired RGB--thermal images of camouflaged animals are not publicly available, so we answer these questions in a controlled simulation built on COD10K~\cite{sinet}, in which the thermal contrast $\delta$ is a known, adjustable quantity. This lets us measure the failure directly and bound the achievable gain with oracle baselines that use the true $\delta$.
+
+\paragraph{Contributions.}
+\begin{itemize}
+\item We measure the crossover failure of a standard two-stream RGB--thermal segmentation network over three seeds, and show that an oracle switch between an RGB-only and a fusion model bounds the recoverable gain at 4.4 mIoU points, all of it at $\delta=0$.
+\item We compare modality dropout at three rates, a learned reliability gate trained with and without direct supervision, an oracle gate fed the true $\delta$, and a threshold rule on raw thermal statistics, and map the resulting trade-off between crossover robustness and accuracy at weak contrast.
+\item We find that an unsupervised gate moves in the wrong direction even when given raw-contrast inputs, that a supervised gate follows $\delta$ but yields no accuracy gain, and that an oracle gate recovers only about a third of the loss at crossover. We state which of our explanations are untested.
+\end{itemize}
+
+%=====================================================================
+\section{Related Work}
+\paragraph{Thermal imaging for wildlife.}
+Drone-based thermal surveys have been used for canopy mammals and other forest fauna, and the studies cited above show that detection and identification rates vary strongly with the time of flight~\cite{kays,whitworth,beaver,mccarthy,burke,corcoran}. These studies rely on human observers to read the imagery; both call for automated processing, and for RGB footage to aid identification. Our work addresses a narrow part of that automation problem, namely how a segmentation model should behave when the thermal channel stops being informative.
+
+\paragraph{RGB--thermal fusion.}
+Fusion detectors exchange information between streams, for example with cross-attention~\cite{cft}, or adapt the fusion to the conditions: IGIANet derives fusion weights from a global illumination estimate~\cite{igianet}, and M$^2$D-LIF adds a local illumination-aware fusion module~\cite{m2dlif}. Common benchmarks are LLVIP~\cite{llvip}, M3FD~\cite{tardal} and DroneVehicle~\cite{dronevehicle}. Camo-M3FD~\cite{camom3fd} adds registered visible--thermal pairs with masks for camouflaged pedestrians; we are not aware of a comparable dataset for camouflaged animals. These works mostly study illumination changes; the case where the thermal signal of the \emph{target itself} vanishes is less studied.
+
+\paragraph{Camouflaged object segmentation.}
+COD10K and the SINet family established the standard benchmark for RGB camouflaged object detection~\cite{sinet,sinetv2}. These methods use visible images only.
+
+\paragraph{Robustness to missing or dominant modalities.}
+Randomly dropping whole modality channels during training (ModDrop) was proposed to make multimodal networks robust to missing signals~\cite{moddrop}. Separately, multimodal networks are known to under-train weaker modalities when a stronger one is available~\cite{wang2020,peng2022}. We use these ideas as hypotheses for the crossover failure and test their simplest forms.
+
+%=====================================================================
+\section{Problem Setting and Simulation}\label{sec:sim}
+\subsection{Simulated thermal channel}
+COD10K has no thermal channel, so we simulate one from each image and its object mask. The protocol was introduced in an earlier manuscript by two of the present authors, which is under review elsewhere (see the Declarations); we restate it so that this paper is self-contained, and all experiments reported here are new. For each image we perform the following steps.
+\begin{enumerate}
+\item The background temperature is $T_{bg}=T_0+2\eta+2(\ell-0.5)$ in kelvin, where $T_0=295$\,K, $\eta$ is a smooth random field (a $12\times12$ noise map up-sampled bicubically) and $\ell\in[0,1]$ is the image luminance, which makes the thermal background partly follow the visible scene.
+\item The temperature inside the object mask is raised by $\delta$.
+\item The temperature map is blurred with a Gaussian point-spread function ($\sigma=1$\,px), and Gaussian noise of 50\,mK is added.
+\item Temperature is converted to band-integrated 8--14\,$\mu$m Planck radiance, the range corresponding to 280--320\,K is mapped linearly to 8 bits, and values are clipped.
+\end{enumerate}
+During training, a dappled-shadow mask $0.25+0.75\,\sigma(2\eta')$ ($\eta'$: $8\times8$ noise map, up-sampled) is applied to the RGB image of 30\% of the samples; the thermal image is generated from the unshadowed image. At test time the RGB image is clean.
+
+Three properties of this simulation matter for interpretation. The animal's silhouette enters the thermal image exactly as the ground-truth mask, so for $\delta\geq2$\,K the thermal channel is far easier to read than a real one. The two images are perfectly registered. Emissivity differences and reflected radiation are ignored.
+
+\subsection{Contrast schedule and metric}
+Training draws $\delta$ uniformly per image from $\{0,0.5,1,2,4,8\}$\,K, so crossover ($\delta=0$) makes up one sixth of the training samples before any remedy is applied. Models are tested at $\delta\in\{8,4,2,1,0\}$\,K. The random seed of the thermal noise is fixed for each $\delta$, so that all models see the same thermal realisations. The metric is mIoU: the mean over test images of the intersection-over-union between the mask thresholded at 0.5 and the ground truth.
+
+%=====================================================================
+\section{Models and Remedies}\label{sec:models}
+\subsection{Fusion network}
+Two ImageNet-pretrained ResNet-18 backbones process the RGB and the thermal image (replicated to three channels), and give features at stages $s\in\{3,4,5\}$ (strides 8, 16, 32; 128, 256, 512 channels). At each stage the two feature maps are concatenated and passed through a $1\times1$ convolution with batch normalisation and ReLU (``Concat''). A light decoder applies a $1\times1$ lateral convolution to 64 channels at each stage, bilinearly up-samples to stride 8, sums the three maps, applies a $3\times3$ convolution block and a $1\times1$ output convolution, and up-samples to the input size. The loss is binary cross-entropy plus a soft-IoU loss. The RGB-only model uses the RGB backbone and the same decoder. 
+
+\subsection{Remedies and reference points}
+\paragraph{Crossover dropout.} With probability $p$ per training sample, $\delta$ is set to 0 before the thermal image is simulated, so the thermal input looks like a normal thermal image with no target contrast. This raises the share of crossover samples from 16.7\% to 25\%, 37.5\% and 58\% for $p=0.10$, 0.25 and 0.50. It can therefore also be read as re-weighting the training distribution towards crossover. We test $p\in\{0.10,0.25,0.50\}$.
+
+\paragraph{Blank-thermal dropout.} With probability $p=0.25$ the thermal image is replaced by zeros, as in ModDrop~\cite{moddrop}. Unlike crossover dropout, the network can recognise this input as ``thermal absent''.
+
+\paragraph{Reliability gate.} A scalar weight $\alpha_s\in[0,1]$ multiplies the thermal features at stage $s$ before concatenation. The weights come from a two-layer MLP ($4\rightarrow32\rightarrow3$, GELU, sigmoid) whose last layer is zero-initialised, so $\alpha_s=0.5$ at the start. Its input is four statistics of the \emph{raw} thermal image, computed before any backbone layer: the logarithms of the mean local standard deviation ($7\times7$ window), the mean Sobel gradient magnitude, the mean high-pass magnitude (difference from a $5\times5$ box mean), and the 99th percentile of the gradient magnitude. They are standardised with means and standard deviations computed on 256 training images before training. In the \emph{unsupervised} gate, $\alpha_s$ is trained only through the segmentation loss. In the \emph{supervised} gate, an additional term $\lambda\,\mathrm{MSE}(\alpha_s,\alpha^{*}(\delta))$ is added to the loss, with the target
+\begin{equation}
+\alpha^{*}(\delta)=\sigma\bigl(k(\delta-\delta_0)\bigr),\qquad k=4,\ \delta_0=0.5\,\mathrm{K},\ \lambda=1,
+\end{equation}
+which equals 0.12, 0.50, 0.88 and 1.00 for $\delta=0$, 0.5, 1 and 2\,K or more. These constants were fixed before the experiments so that the target is high wherever thermal contrast is present in the training set and low at crossover; they were not tuned. For samples affected by dropout, the target uses $\delta=0$.
+
+\paragraph{Oracle gate.} The same architecture, but $\alpha_s=\alpha^{*}(\delta)$ is computed from the true $\delta$ and nothing is learned. It shows what a perfect scalar gate of this kind could achieve. It cannot be deployed, because $\delta$ is unknown in practice.
+
+\paragraph{Oracle switch and threshold rule.} The oracle switch uses the RGB-only model when $\delta<1$\,K and the Concat model otherwise, with both models trained with the same seed; it bounds what any image-level switching between the two models can gain. The threshold rule makes the same choice using only the raw thermal image: it uses the Concat model if the logarithm of the 99th-percentile gradient exceeds a threshold $\tau$, and the RGB-only model otherwise. $\tau$ is chosen on 400 training images at each of the six training contrasts, to maximise balanced accuracy for separating $\delta\geq1$ from $\delta<1$.
+
+%=====================================================================
+\section{Experimental Setup}
+We use the 3040 training and 2026 test images of the camouflaged subset of COD10K~\cite{sinet}, resized to $352\times352$. Training uses AdamW~\cite{adamw} (learning rate $2\times10^{-4}$, weight decay $10^{-4}$, one-cycle schedule), batch size 16, 12 epochs, gradient clipping at norm 5, random horizontal flips and mixed precision, on one Tesla T4 GPU; a run takes about 3 minutes for the RGB-only model and 6--7 minutes for the fusion models. The backbones are ResNet-18~\cite{resnet} pretrained on ImageNet. Every configuration is run with three seeds (0, 1, 2) and results are reported as mean $\pm$ sample standard deviation over seeds. With only three seeds, differences of about one standard deviation are not reliable; we therefore base conclusions on effect sizes and, where useful, on Welch tests, which we treat as indicative only. Code for the simulation, models and experiments is available at~\cite{githubrepo}.
+
+%=====================================================================
+\section{Results}\label{sec:res}
+Table~\ref{tab:main} gives the full results, and Fig.~\ref{fig:miou} plots them.
+
+\begin{table}[t]
+\centering
+\caption{mIoU (\%) on the COD10K test set against thermal contrast $\delta$ (K).}
+\label{tab:main}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lcccccc}
+\toprule
+Method & $\delta=8$ & $\delta=4$ & $\delta=2$ & $\delta=1$ & $\delta=0$ & Avg \\
+\midrule
+RGB only & 46.5$\pm$0.2 & 46.5$\pm$0.2 & 46.5$\pm$0.2 & 46.5$\pm$0.2 & 46.5$\pm$0.2 & 46.5 \\
+Concat (early fusion) & 87.7$\pm$0.3 & 87.6$\pm$0.3 & 86.7$\pm$0.3 & 80.6$\pm$0.5 & 42.1$\pm$0.4 & 76.9 \\
+\quad + crossover dropout, $p{=}0.10$ & 87.6$\pm$0.3 & 87.5$\pm$0.2 & 86.5$\pm$0.2 & 79.7$\pm$0.1 & 44.0$\pm$0.5 & 77.1 \\
+\quad + crossover dropout, $p{=}0.25$ & 87.5$\pm$0.2 & 87.2$\pm$0.2 & 86.0$\pm$0.1 & 77.9$\pm$0.1 & 45.6$\pm$0.2 & 76.9 \\
+\quad + crossover dropout, $p{=}0.50$ & 87.1$\pm$0.2 & 86.8$\pm$0.2 & 85.4$\pm$0.3 & 74.5$\pm$0.5 & 47.0$\pm$0.0 & 76.2 \\
+\quad + blank-thermal dropout, $p{=}0.25$ & 87.4$\pm$0.2 & 87.2$\pm$0.2 & 86.1$\pm$0.1 & 78.5$\pm$0.2 & 44.7$\pm$0.2 & 76.8 \\
+Gate, unsupervised & 87.5$\pm$0.4 & 87.4$\pm$0.5 & 86.4$\pm$0.5 & 80.2$\pm$0.6 & 42.3$\pm$0.4 & 76.8 \\
+Gate, supervised & 87.5$\pm$0.4 & 87.3$\pm$0.5 & 86.3$\pm$0.5 & 79.7$\pm$0.7 & 42.3$\pm$0.4 & 76.6 \\
+Gate, supervised + blank dropout & 87.2$\pm$0.3 & 87.0$\pm$0.3 & 85.6$\pm$0.4 & 77.5$\pm$0.7 & 44.8$\pm$0.5 & 76.4 \\
+Oracle gate (true $\delta$) & 87.9$\pm$0.2 & 87.8$\pm$0.2 & 87.1$\pm$0.2 & 81.6$\pm$0.6 & 43.8$\pm$0.8 & 77.6 \\
+Threshold rule & 84.7$\pm$0.5 & 83.4$\pm$0.6 & 78.0$\pm$1.3 & 56.6$\pm$2.4 & 46.0$\pm$0.2 & 69.7 \\
+Oracle switch (true $\delta$) & 87.7$\pm$0.3 & 87.6$\pm$0.3 & 86.7$\pm$0.3 & 80.6$\pm$0.5 & 46.5$\pm$0.2 & 77.8 \\
+\bottomrule
+\end{tabular}}
+\\ \vspace{1mm} \scriptsize Mean $\pm$ sample standard deviation over three seeds. ``Avg'' is the unweighted mean of the five columns and is only a rough summary, since the real mix of contrasts is unknown. Oracle rows use the true $\delta$.
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{fig_miou.pdf}
+\caption{mIoU against thermal contrast $\delta$ for selected models.}
+\scriptsize Mean over three seeds; bars denote one standard deviation. (b) magnifies the low-contrast range.
+\label{fig:miou}
+\end{figure}
+
+\subsection{The crossover failure and its bound}
+The RGB-only model reaches 46.5\% regardless of $\delta$, since it ignores the thermal input. The Concat model is far better when thermal contrast exists (87.7\% at $\delta=8$\,K and 80.6\% at 1\,K), but at $\delta=0$ it reaches only 42.1\%, which is 4.4 points \emph{below} the RGB-only model. The gap is consistent across seeds (standard deviations 0.2 and 0.4). The oracle switch shows what could be gained by choosing the better of the two models per image: it changes nothing for $\delta\geq1$ and gains the full 4.4 points at $\delta=0$. The crossover problem is therefore bounded: no switching strategy between these two models can improve the average over the five contrasts by more than 0.9 points (76.9\% to 77.8\%).
+
+\subsection{Modality dropout}
+Crossover dropout recovers part or all of the loss at $\delta=0$ in proportion to the dropout rate: 44.0\%, 45.6\% and 47.0\% for $p=0.10$, 0.25 and 0.50, compared with 42.1\% for Concat (Table~\ref{tab:main}). The value at $p=0.50$ is 0.4 points above the RGB-only model, which is within the seed variation of the two models (Welch $p\approx0.09$), so we read it as matching RGB-only. The cost appears at weak contrast: at $\delta=1$\,K the three rates lose 0.9, 2.7 and 6.1 points relative to Concat, and at $\delta=2$\,K they lose 0.2, 0.6 and 1.3. At strong contrast ($\delta\geq4$\,K) the loss is at most 0.8 points. Fig.~\ref{fig:tradeoff} shows the resulting trade-off: moving along the dropout rate exchanges accuracy at $\delta=1$ for accuracy at $\delta=0$. The unweighted average over contrasts barely changes (77.1\%, 76.9\%, 76.2\% against 76.9\%), so which rate is preferable depends entirely on how often each contrast occurs in deployment.
+
+Blank-thermal dropout at the same rate $p=0.25$ recovers less at crossover than crossover dropout (44.7\% against 45.6\%) and costs less at $\delta=1$\,K (78.5\% against 77.9\%). This is what one would expect if crossover dropout acts mainly by re-weighting the training distribution towards $\delta=0$, but we did not test this explanation separately.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.62\linewidth]{fig_tradeoff.pdf}
+\caption{Accuracy at crossover versus weak contrast ($\delta=1$\,K).}
+\scriptsize Mean over three seeds; bars denote one standard deviation. The dotted line is the RGB-only model.
+\label{fig:tradeoff}
+\end{figure}
+
+\subsection{Reliability gates}
+Fig.~\ref{fig:alpha} shows the mean thermal gate against $\delta$. The \emph{unsupervised} gate, although it sees raw thermal statistics, moves in the wrong direction: at stage 3 its mean value rises from 0.49 at $\delta=8$ to 0.69 at $\delta=0$, and the change is smaller at stages 4 and 5 (0.49 to 0.60 and 0.51 to 0.55). Its accuracy is indistinguishable from Concat (42.3\% at $\delta=0$, 80.2\% at $\delta=1$). The \emph{supervised} gate follows the target: its stage-3 mean falls from 0.91 at $\delta=8$ to 0.62 at $\delta=0$, with the same trend at stages 4 and 5. But accuracy does not improve: 42.3\% at $\delta=0$ ($+0.1$ against Concat, Welch $p\approx0.7$) and 79.7\% at $\delta=1$ ($-0.9$, $p\approx0.13$). Adding blank-thermal dropout to the supervised gate gives 44.8\% at $\delta=0$, the same as blank-thermal dropout alone (44.7\%), and a slightly lower 77.5\% at $\delta=1$ (78.5\% without the gate).
+
+Note also that the supervised gate under-fits its own target: at $\delta=0$ the learned mean is about 0.62, whereas the target is 0.12.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{fig_alpha.pdf}
+\caption{Mean thermal gate $\bar\alpha_{ir}$ on the test set against $\delta$.}
+\scriptsize The mean over three seeds; bars denote one standard deviation. The oracle gate is the target $\alpha^{*}(\delta)$.
+\label{fig:alpha}
+\end{figure}
+
+\subsection{Oracle gate}
+Given the true $\delta$, the oracle gate reaches 43.8\% at $\delta=0$ and 81.6\% at $\delta=1$\,K. Compared with Concat, this is $+1.6$ points at $\delta=0$ (Welch $p\approx0.05$) and $+1.0$ at $\delta=1$ ($p\approx0.08$), with gains of 0.2 to 0.4 points at $\delta\geq2$. Compared with the learned supervised gate it is $+1.9$ points at $\delta=1$ ($p\approx0.02$). So the learned gate leaves some accuracy unused, and a gate that is correct costs nothing at weak contrast. But even a perfect gate recovers only 1.6 of the 4.4 points lost at crossover (37\%) and remains 2.8 points below the RGB-only model ($p\approx0.02$).
+
+\subsection{Threshold rule}
+The threshold rule reaches 46.0\% at $\delta=0$, but it sends many images to the wrong model: averaged over seeds it routes 5\%, 8\%, 18\%, 69\% and 91\% of the test images to the RGB-only model at $\delta=8,4,2,1,0$. Its accuracy at $\delta=1$ is 56.6\%, 24 points below Concat, and its average over contrasts is 69.7\%, the lowest of all models except RGB-only. The threshold had a balanced accuracy of about 0.82--0.83 on the training images, which is not high enough: errors at the intermediate contrasts are costly because the fusion model is far better than RGB-only there. This rule was tuned for classification accuracy, not for mIoU, and should be read as a simple baseline rather than the best possible rule.
+
+%=====================================================================
+\section{Discussion}\label{sec:disc}
+\paragraph{What the results support.} In this simulation, (i) a standard fusion network falls below an RGB-only model at crossover; (ii) the loss is bounded by a small amount (4.4 points) at a single operating point; (iii) simple training-time changes shift the operating point along a trade-off between crossover and weak-contrast accuracy; and (iv) learned gating did not improve accuracy, even when supervised, and even a perfect scalar gate recovers only part of the loss.
+
+\paragraph{Why does fusion fall below RGB-only?} One possible explanation is that, since the thermal channel solves the task for five of the six training contrasts, the RGB pathway receives little learning signal and is weaker than a stand-alone RGB model, a pattern described for multimodal networks in general~\cite{wang2020,peng2022}. This would also explain why dropout helps and why the oracle gate, which only rescales thermal features, helps less. We did not test it, for example by evaluating the RGB pathway alone or measuring its gradients, so it remains a hypothesis. A second contribution may come from thermal clutter: at $\delta=0$ the thermal channel still contains the scene-correlated background, which can mislead the decoder.
+
+\paragraph{Why did gating not help?} We can rule out some explanations and not others. The gate had the information it needed in principle, because a simple threshold on one raw statistic separates useful from useless thermal images reasonably well (balanced accuracy about 0.83), yet the unsupervised gate still moved the wrong way. A possible reason is that, without supervision, the gate has no incentive to track contrast: the downstream layers can rescale thermal features and absorb any gate value. The same flexibility may limit the oracle gate, since the $1\times1$ fusion convolution follows the gate. In addition, the gate sees global image statistics while the target occupies a small part of the image, which would make the descriptors noisy. These explanations are untested.
+
+\paragraph{Practical reading.} If crossover is expected to be rare, a low dropout rate or an oracle-quality gate costs little and gives some protection; if the worst case matters most, such as for surveys flown at dawn, a high dropout rate removes the below-RGB failure at the price of weak-contrast accuracy. Real surveys vary in contrast across the day~\cite{kays,whitworth}, so the right choice depends on the distribution of $\delta$ in the target deployment, which our unweighted average does not represent.
+
+\paragraph{Limitations.} (i) The thermal channel is synthetic and contains the animal's exact silhouette, so accuracy for $\delta\geq2$ mostly shows that a network can read a clean silhouette, and does not measure camouflage handling in real scenes. (ii) COD10K contains categories, such as aquatic animals, for which a thermal channel generated in the same way is not realistic. (iii) The RGB-only baseline is a small ResNet-18 trained for 12 epochs on 3040 images, and its 46.5\% is not comparable with published COD10K results. (iv) Three seeds give only rough estimates of variability, and the Welch $p$-values are indicative. (v) The gate is a single scalar per stage, computed from global statistics, and its constants ($k$, $\delta_0$, $\lambda$, the descriptors) were fixed and not explored. (vi) Only one architecture and one dataset were used, and we did not evaluate under degraded RGB images. (vii) No real thermal data were used; the conclusions apply to the simulation and may not transfer.
+
+%=====================================================================
+\section{Conclusion and Future Work}
+In a controlled simulation of thermal crossover, we found that a standard RGB--thermal segmentation network falls 4.4 mIoU points below an RGB-only model when the target has no thermal contrast, and that a perfect image-level switch could recover exactly that amount and nothing else. Modality dropout recovers the loss at a cost at weak contrast, an unsupervised gate fails to track contrast, a supervised gate tracks it without improving accuracy, and an oracle gate recovers only about a third of the loss. We therefore see the crossover problem as one of training and operating-point choice rather than of gate design alone.
+
+The most important next step is real data: paired RGB--thermal images of animals under cover at several times of day, with the thermal contrast of each target measured from its mask. Camo-M3FD~\cite{camom3fd} offers real registered pairs with masks for camouflaged pedestrians and could serve as a first check of the crossover behaviour, if enough low-contrast cases exist. Other directions are spatially varying gates, combining the oracle-quality gate with dropout, and testing the explanations in Section~\ref{sec:disc}.
+
+\section*{Declarations}
+\textbf{Funding:} This research received no external funding. Experiments used the free tier of Kaggle (NVIDIA Tesla T4 GPUs).\\
+\textbf{Conflicts of interest/Competing interests:} The authors declare that they have no competing interests.\\
+\textbf{Ethics approval:} Not applicable.\\
+\textbf{Consent to participate:} Not applicable.\\
+\textbf{Consent for publication:} Not applicable.\\
+\textbf{Availability of data and material:} COD10K is a public dataset~\cite{sinet}. The thermal channel is simulated on the fly.\\
+\textbf{Code availability:} The simulation protocol, PyTorch training scripts, and experiment logs are open-sourced under the MIT License (Version 2.0) and available at~\cite{githubrepo}.\\
+\textbf{Authors' contributions:} A.K.S. conceived the study, ran the experiments, analysed the results, and prepared the manuscript with AI assistance (see below). P.G. supervised the work and reviewed the manuscript. A.T. assisted with the multi-seed experiment execution, statistical significance testing, and manuscript formatting.\\
+\textbf{Use of AI tools:} The authors used AI assistants (Claude, Anthropic, and Gemini, Google) to help plan experiments, draft code and \LaTeX{} source, summarise results and check references. The experiments were run by the authors, the reported numbers are taken directly from the experiment outputs, and the authors reviewed the content and take full responsibility for it.\\
+\textbf{Related submission:} A related manuscript by two of the present authors, which proposes a wavelet-domain RGB--thermal fusion network and evaluates it under the same simulated protocol (Section~\ref{sec:sim}), is under review at another conference. The present paper does not use that network. Its experiments, models (plain concatenation with dropout and gating variants), results and analysis are new, and the RGB-only and concatenation baselines were retrained here.
+
+\begin{thebibliography}{99}
+\bibitem{kays} Kays, R., Sheppard, J., McLean, K., Welch, C., Paunescu, C., Wang, V., Kravit, G., Crofoot, M.: Hot monkey, cold reality: surveying rainforest canopy mammals using drone-mounted thermal infrared sensors. Int. J. Remote Sens. \textbf{40}(2), 407--419 (2019)
+\bibitem{whitworth} Whitworth, A., Pinto, C., Ortiz, J., Flatt, E., Silman, M.: Flight speed and time of day heavily influence rainforest canopy wildlife counts from drone-mounted thermal camera surveys. Biodivers. Conserv. \textbf{31}, 3179--3195 (2022)
+\bibitem{beaver} Beaver, J.T., et al.: Use of drones and thermal imaging cameras to detect canopy wildlife. Wildl. Soc. Bull. \textbf{44}(4), 682--692 (2020)
+\bibitem{mccarthy} McCarthy, K.P., et al.: Detection of arboreal wildlife using thermal-equipped drones. Remote Sens. Ecol. Conserv. \textbf{7}(4), 552--565 (2021)
+\bibitem{burke} Burke, C., et al.: Drone-based monitoring of camouflage and thermal signatures. Int. J. Remote Sens. \textbf{40}(11), 4153--4175 (2019)
+\bibitem{corcoran} Corcoran, E., et al.: Automated detection of wildlife in thermal imagery. Methods Ecol. Evol. \textbf{12}(6), 1102--1112 (2021)
+\bibitem{sinet} Fan, D.P., Ji, G.P., Sun, G., Cheng, M.M., Shen, J., Shao, L.: Camouflaged object detection. In: CVPR, pp. 2777--2787 (2020)
+\bibitem{cft} Fang, Q., Han, D., Wang, Z.: Cross-modality fusion transformer for multispectral object detection. arXiv:2111.00273 (2021)
+\bibitem{igianet} Chen, X., Zhang, D., Zhao, L., Yang, C., Chen, Z., Lou, J., Zheng, Z., Jeon, S.W., Wang, H.: IGIANet: Illumination guided implicit alignment network for infrared--visible UAV detection. In: AAAI (2026)
+\bibitem{m2dlif} Zhao, T., Liu, B., Gao, Y., Sun, Y., Yuan, M., Wei, X.: Rethinking multi-modal object detection from the perspective of mono-modality feature learning. In: ICCV, pp. 6364--6373 (2025)
+\bibitem{llvip} Jia, X., Zhu, C., Li, M., Tang, W., Zhou, W.: LLVIP: A visible-infrared paired dataset for low-light vision. In: ICCV Workshops, pp. 3496--3504 (2021)
+\bibitem{tardal} Liu, J., Fan, X., Huang, Z., Wu, G., Liu, R., Zhong, W., Luo, Z.: Target-aware dual adversarial learning and a multi-scenario multi-modality benchmark to fuse infrared and visible for object detection. In: CVPR (2022)
+\bibitem{dronevehicle} Sun, Y., Cao, B., Zhu, P., Hu, Q.: Drone-based RGB-infrared cross-modality vehicle detection via uncertainty-aware learning. IEEE TCSVT \textbf{32}(10), 6700--6713 (2022)
+\bibitem{camom3fd} Velesaca, H. O., Mero, A., Castillo, G. A., Sappa, A. D.: Camo-M3FD: A new benchmark dataset for cross-spectral camouflaged pedestrian detection. arXiv:2604.16582 (2026)
+\bibitem{sinetv2} Fan, D.P., Ji, G.P., Cheng, M.M., Shao, L.: Concealed object detection. IEEE TPAMI \textbf{44}(10), 6024--6042 (2022)
+\bibitem{moddrop} Neverova, N., Wolf, C., Taylor, G., Nebout, F.: ModDrop: adaptive multi-modal gesture recognition. IEEE TPAMI (2016), arXiv:1501.00102
+\bibitem{wang2020} Wang, W., Tran, D., Feiszli, M.: What makes training multi-modal classification networks hard? In: CVPR, pp. 12695--12705 (2020)
+\bibitem{peng2022} Peng, X., Wei, Y., Deng, A., Wang, D., Hu, D.: Balanced multimodal learning via on-the-fly gradient modulation. In: CVPR, pp. 8238--8247 (2022)
+\bibitem{adamw} Loshchilov, I., Hutter, F.: Decoupled weight decay regularization. In: ICLR (2019)
+\bibitem{resnet} He, K., Zhang, X., Ren, S., Sun, J.: Deep residual learning for image recognition. In: CVPR (2016)
+\bibitem{githubrepo} Singh, A.K.: SpectralGate-Net Repository (v2.0). GitHub. \url{https://github.com/atulsingh369/SpectralGate-Net} (2026)
+\end{thebibliography}
+
+\end{document}
